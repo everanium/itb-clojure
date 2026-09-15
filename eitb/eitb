@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+#
+# eitb -- launcher for the Clojure binding's eitb CLI. Builds the
+# Java binding layer on first use (via ../build.sh), then execs the
+# clojure.main script with the :eitb alias.
+
+set -eu
+
+HERE="$(cd "$(dirname "$0")" && pwd)"
+JAR="$HERE/../../java/build/libs/libitb3-java-0.5.1.jar"
+JNI="$HERE/../../java/build/jni/libitb3_jni.so"
+
+if [ ! -f "$JAR" ] || [ ! -f "$JNI" ]; then
+    "$HERE/../build.sh" >&2
+fi
+
+export ITB_JNI_PATH="${ITB_JNI_PATH:-$JNI}"
+cd "$HERE/.."
+exec clojure -M:eitb eitb/main.clj "$@"
