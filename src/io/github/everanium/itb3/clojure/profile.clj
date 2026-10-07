@@ -16,6 +16,9 @@
     :key-bits    long
     :nonce-bits  long or nil — inspection-only (see below)
     :barrier-fill long or nil — inspection-only (see below)
+    :container-mode long or nil — inspection-only (see below)
+    :drbg        string  — DRBG fill primitive (\"\" selects the auto
+                 tier); a recipe key, so a registered copy keeps it
     :mac         string  — \"\" on a No MAC profile
     :tag-stub    long    — 0 when absent
     :chunk       long    — 0 when absent
@@ -25,12 +28,12 @@
     :palette     vector of strings ([] when absent)
     :segment     long    — 0 when absent
 
-  :nonce-bits and :barrier-fill are inspection-only. They are not
-  part of the profile recipe: `inspect` reads them from the blob's
-  runtime globals snapshot, while `lookup` leaves both nil because
+  :nonce-bits, :barrier-fill and :container-mode are inspection-only.
+  They are not part of the profile recipe: `inspect` reads them from
+  the blob's inner snapshot, while `lookup` leaves them nil because
   the registry entry never carries them. Go rejects a `register!`
-  payload that carries either key, so dissoc both before registering
-  an inspected record.
+  payload that carries any of the keys, so dissoc them before
+  registering an inspected record.
 
   No semantic validation happens on the JVM side — every field rule
   is enforced by Go at register! / load time and surfaces as the
@@ -49,6 +52,8 @@
    :key-bits (.keyBits p)
    :nonce-bits (some-> (.nonceBits p) long)
    :barrier-fill (some-> (.barrierFill p) long)
+   :container-mode (some-> (.containerMode p) long)
+   :drbg (.drbg p)
    :mac (.mac p)
    :tag-stub (.tagStub p)
    :chunk (.chunk p)
@@ -75,6 +80,8 @@
           :key-bits (.keyBits p (int v))
           :nonce-bits (.nonceBits p (some-> v int))
           :barrier-fill (.barrierFill p (some-> v int))
+          :container-mode (.containerMode p (some-> v int))
+          :drbg (.drbg p (str v))
           :mac (.mac p (str v))
           :tag-stub (.tagStub p (int v))
           :chunk (.chunk p (int v))
